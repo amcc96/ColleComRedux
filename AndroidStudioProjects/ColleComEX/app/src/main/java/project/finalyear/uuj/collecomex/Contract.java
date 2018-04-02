@@ -2,9 +2,15 @@ package project.finalyear.uuj.collecomex; /**
  * Created by Andrew on 17/03/2018.
  */
 import android.content.Context;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.util.Log;
+
+import java.util.ArrayList;
 
 /**
  * Created by Andrew on 01/03/2018.
@@ -60,19 +66,24 @@ public final class Contract {
         public static final int DATABASE_VERSION = 1;
         public static final String DATABASE_NAME = "Tracker.db";
 
-        public TrackerDbHelper(Context context){
+
+        public TrackerDbHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
-        public void onCreate(SQLiteDatabase db){
+
+        public void onCreate(SQLiteDatabase db) {
             db.execSQL(SQL_CreateTable);
         }
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
+
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             db.execSQL(SQL_DeleteTable);
             onCreate(db);
         }
-        public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion){
+
+        public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             onUpgrade(db, oldVersion, newVersion);
         }
-    }
 
+
+    }//end TrackerDbHelper
 }//end class Contract
