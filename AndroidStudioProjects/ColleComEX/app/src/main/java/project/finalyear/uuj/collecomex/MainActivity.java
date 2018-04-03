@@ -1,15 +1,14 @@
 package project.finalyear.uuj.collecomex;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.*;
-import android.os.AsyncTask;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.BaseColumns;
-import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -17,24 +16,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.w3c.dom.Text;
-
+import org.w3c.dom.Document;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.jsoup.Jsoup.connect;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,16 +50,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //WRITE
-        //String price = "£9.99";
         Context contextNew = this;
         Contract.TrackerDbHelper mDbHelper = new Contract.TrackerDbHelper(contextNew);
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         Log.e("db", "Write Database Created");
         //START PARSER
-        //TextView textView = findViewById(R.id.testValue);
-        //TextView textView1 = findViewById(R.id.textView2);
-        //enableStrictMode(); //PARSER LINE 1
-        //long newRowId = db.insert(Contract.Tracked.TABLE_NAME, null, Parser.itemRetrieve()); //PARSER LINE 2
+        enableStrictMode(); //PARSER LINE 1
+        long newRowId = db.insert(Contract.Tracked.TABLE_NAME, null, Parser.itemRetrieve()); //PARSER LINE 2
         //END PARSER
         Log.i("Parser", "Parser run ended");
         //contextNew.deleteDatabase(mDbHelper.getDatabaseName()); //FAILSAFE DELETE DATABASE
@@ -104,52 +96,6 @@ public class MainActivity extends AppCompatActivity {
             itemIds.add(itemId);
         }//end while
         cursor.close();
-        //TextView textView = findViewById(R.id.testValue);
-
-        //int listSize = itemIds.size();
-
-       /* for (int i = 0; i < itemIds.size(); i++) {
-            textView.setText(itemIds.get(i));
-            //textView.getText() + "\n" +
-            //Log.d("Hi", "Hello");
-        }//end for*/
-
-        //textView1.setText(getTableAsString(dbRead, Contract.Tracked.TABLE_NAME));
-
-
-        //Cursor tblSize = db.rawQuery("SELECT COUNT() FROM "+Contract.Tracked.TABLE_NAME, null);
-        CharSequence tblPrint = "Hello";
-
-        /*
-        while(tblSize.moveToNext()){
-            LinearLayout myLayout = findViewById(R.id.tblTrackerList);
-            //CREATE IMAGEBUTTON
-            ImageButton myImage = new ImageButton(this);
-            myImage.setLayoutParams(new LinearLayout.LayoutParams(172, 77));
-            //CREATE TEXTVIEW
-            TextView myView = new TextView(this);
-            myView.setLayoutParams(new LinearLayout.LayoutParams(263,LinearLayout.LayoutParams.WRAP_CONTENT));
-            //CREATE TABLEROW
-            TableRow myRow = new TableRow(this);
-            myRow.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-            //ADD NEW VIEWS
-            myLayout.addView(myRow);
-            myRow.addView(myImage);
-            myRow.addView(myView);
-            //PRINT TO TEXTVIEW
-            tblPrint = textView1.getText();
-            myView.setText(tblPrint + getTableAsString(dbRead, Contract.Tracked.TABLE_NAME));
-        }//end WHILE LOOP
-        */
-
-        /*
-        for(int i = 0; i < ; i++) {
-            textView1.setText(getTableAsString(dbRead, Contract.Tracked.TABLE_NAME, i));
-            textView1.setText(tblLength);
-        }//end for
-        */
-
-
 
     }//end onCreate
 
@@ -164,57 +110,71 @@ public class MainActivity extends AppCompatActivity {
     public void getTableAsString(SQLiteDatabase db, String tableName) {
         Log.d(TAG, "getTableAsString called");
         String tableString = "";
-        //String.format("Table %s:\n", tableName)
-        Cursor allRows  = db.rawQuery("SELECT "+ Contract.Tracked.COLUMN_NAME_TITLE+ ", " + Contract.Tracked.COLUMN_NAME_PRICE +", "+Contract.Tracked.COLUMN_NAME_STOCK+" FROM " + tableName, null);
-        if (allRows.moveToFirst() ){
-            String[] columnNames = allRows.getColumnNames();
-            do {
-                for (String name: columnNames) {
-                    //PRINT TO TEXTVIEW
-                    //tblPrint = myView.getText();
-                    //myView.setText(tblPrint + getTableAsString(dbRead, Contract.Tracked.TABLE_NAME));
-                    tableString += String.format(allRows.getString(allRows.getColumnIndex(name)));
-                            tableString+="\n";
-                            Log.v("tableString", tableString);
+        String img = "";
+        int imageResource;
+        Drawable res = null;
 
-                    //"%s: %s\n", name,
-                }//end for
-                TableLayout myLayout = findViewById(R.id.tblTrackerList);
-                //CREATE TEXTVIEW
-                TextView myView = new TextView(this);
-                myView.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.WRAP_CONTENT));
+            //String.format("Table %s:\n", tableName)
+            Cursor allRows = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_TITLE + ", " + Contract.Tracked.COLUMN_NAME_PRICE + ", " + Contract.Tracked.COLUMN_NAME_STOCK + " FROM " + tableName, null);
+            //Cursor images = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_IMAGE + " FROM " +tableName, null);
+            //org.jsoup.nodes.Document doc = Jsoup.connect("https://www.amazon.co.uk/Magic-Gathering-14441-Kaladesh-Bundle/dp/B01LDELE0Q/ref=sr_1_1?ie=UTF8&qid=1522766138&sr=8-1").get();
+            //Elements image = doc.select("img#landingImage");
+            //String imgSrc = image.attr("src");
+            //InputStream input = new java.net.URL(imgSrc).openStream();
+            //Bitmap bitmap = BitmapFactory.decodeStream(input);
+
+            if (allRows.moveToFirst()) {
+                String[] columnNames = allRows.getColumnNames();
+                do {
+                    for (String name : columnNames) {
+                        //PRINT TO TEXTVIEW
+                        //tblPrint = myView.getText();
+                        //myView.setText(tblPrint + getTableAsString(dbRead, Contract.Tracked.TABLE_NAME));
+                        tableString += String.format(allRows.getString(allRows.getColumnIndex(name)));
+                        tableString += "\n";
+                        Log.v("tableString", tableString);
+                        //img= String.format(images.getString(images.getColumnIndex(name)));
+                        //imageResource = getResources().getIdentifier(img, null, getPackageName());
+                        //res = getResources().getDrawable(imageResource);
+                        //"%s: %s\n", name,
+                    }//end for
+                    TableLayout myLayout = findViewById(R.id.tblTrackerList);
+                    //CREATE TEXTVIEW
+                    TextView myView = new TextView(this);
+                    myView.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 
 
-                //CREATE IMAGEBUTTON
-                ImageButton myImage = new ImageButton(this);
-                myImage.setLayoutParams(new TableRow.LayoutParams(172, 77));
+                    //CREATE IMAGEBUTTON
+                    ImageButton myImage = new ImageButton(this);
+                    myImage.setLayoutParams(new TableRow.LayoutParams(172, 77));
+                    //myImage.setImageBitmap(bitmap);
 
-                //CREATE TABLE
-                //TableLayout myTable = new TableLayout(this);
-                //myTable.setLayoutParams(new TableLayout.LayoutParams(0, TableLayout.LayoutParams.WRAP_CONTENT));
+                    //CREATE TABLE
+                    //TableLayout myTable = new TableLayout(this);
+                    //myTable.setLayoutParams(new TableLayout.LayoutParams(0, TableLayout.LayoutParams.WRAP_CONTENT));
 
-                //CREATE TABLEROW
-                TableRow myRow = new TableRow(this);
-                myRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
+                    //CREATE TABLEROW
+                    TableRow myRow = new TableRow(this);
+                    myRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
 
-                //ADD NEW VIEWS
-                myView.setText(tableString);
-                //myLayout.addView(myView);
-                myRow.addView(myImage);
-                myRow.addView(myView);
-                myLayout.addView(myRow, new TableLayout.LayoutParams(TabLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
-                //myView.setText(tableString);
-                //myTable.addView(myRow);
+                    //ADD NEW VIEWS
+                    myView.setText(tableString);
+                    //myLayout.addView(myView);
+                    myRow.addView(myImage);
+                    myRow.addView(myView);
+                    myLayout.addView(myRow, new TableLayout.LayoutParams(TabLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
+                    //myView.setText(tableString);
+                    //myTable.addView(myRow);
 
-                tableString = "";
-                Log.e("print", "Layouts should be added");
-            } while (allRows.moveToNext());
-        }
+                    tableString = "";
+                    img = "";
+                    res = null;
+                    imageResource = 0;
+                    Log.e("print", "Layouts should be added");
+                } while (allRows.moveToNext());
+            }
 
-        //return tableString;
+            //return tableString;
     }//end GETTABLEASSTRING
 
-}
-
-
-
+}//END MAIN ACTIVITY
