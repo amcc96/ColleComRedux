@@ -12,12 +12,14 @@ import android.provider.BaseColumns;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -69,7 +71,9 @@ public class MainActivity extends AppCompatActivity {
 
         //READ
         SQLiteDatabase dbRead = mDbHelper.getReadableDatabase();
+        //GET TABLE AS STRING
         getTableAsString(dbRead, Contract.Tracked.TABLE_NAME);
+
         String[] projection = {
                 BaseColumns._ID,
                 Contract.Tracked.COLUMN_NAME_TITLE,
@@ -145,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
         }//end for
         */
 
+
+
     }//end onCreate
 
     public void enableStrictMode(){
@@ -174,13 +180,14 @@ public class MainActivity extends AppCompatActivity {
                     //"%s: %s\n", name,
                 }//end for
                 TableLayout myLayout = findViewById(R.id.tblTrackerList);
-                //CREATE IMAGEBUTTON
-                ImageButton myImage = new ImageButton(this);
-                myImage.setLayoutParams(new LinearLayout.LayoutParams(172, 77));
-
                 //CREATE TEXTVIEW
                 TextView myView = new TextView(this);
-                myView.setLayoutParams(new LinearLayout.LayoutParams(263,LinearLayout.LayoutParams.WRAP_CONTENT));
+                myView.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.WRAP_CONTENT));
+
+
+                //CREATE IMAGEBUTTON
+                ImageButton myImage = new ImageButton(this);
+                myImage.setLayoutParams(new TableRow.LayoutParams(172, 77));
 
                 //CREATE TABLE
                 //TableLayout myTable = new TableLayout(this);
@@ -191,11 +198,12 @@ public class MainActivity extends AppCompatActivity {
                 myRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
 
                 //ADD NEW VIEWS
-
                 myView.setText(tableString);
+                //myLayout.addView(myView);
                 myRow.addView(myImage);
                 myRow.addView(myView);
-                myLayout.addView(myRow);
+                myLayout.addView(myRow, new TableLayout.LayoutParams(TabLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
+                //myView.setText(tableString);
                 //myTable.addView(myRow);
 
                 tableString = "";
