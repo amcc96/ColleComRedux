@@ -29,7 +29,7 @@ public class Parser {
 
     //    public static String itemRetrieve(String url){
 
-    public static ContentValues itemRetrieve(){
+    public static ContentValues itemRetrieve(String url){
         //String text = "";
         //TextView returnView = test;
         ContentValues values = new ContentValues();
@@ -37,7 +37,7 @@ public class Parser {
             try {
                 //String itemName = "";
                 System.setProperty("javax.net.ssl.trustStore", "C:/Users/Andrew/AndroidStudioProjects/ColleComEX/wwwamazoncouk.jks");
-                Document doc = Jsoup.connect("https://www.amazon.co.uk/Magic-Gathering-14441-Kaladesh-Bundle/dp/B01LDELE0Q/ref=sr_1_1?ie=UTF8&qid=1522766138&sr=8-1").get();
+                Document doc = Jsoup.connect(url).get();
                 String title = doc.title();
                 Elements name = doc.select("span#productTitle");//name
                 Elements price = doc.select("span#priceblock_ourprice");
@@ -52,6 +52,7 @@ public class Parser {
                     values.put(Contract.Tracked.COLUMN_NAME_TITLE, name.text());
                     values.put(Contract.Tracked.COLUMN_NAME_PRICE, price.text());
                     values.put(Contract.Tracked.COLUMN_NAME_STOCK, stock.text());
+                    //values.put(Contract.Tracked.COLUMN_NAME_URL, url);
                     //values.put(Contract.Tracked.COLUMN_NAME_IMAGE, src);
                     //itemName = link.text();
                     //Log.d("Item name", itemName);

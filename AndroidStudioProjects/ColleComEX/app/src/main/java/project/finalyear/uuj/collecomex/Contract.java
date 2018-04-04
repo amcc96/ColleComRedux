@@ -57,7 +57,7 @@ public final class Contract {
                     Contract.Tracked.COLUMN_NAME_STOCK + ", " +
                     Contract.Tracked.COLUMN_NAME_OLDPRICE + ", " +
                     Contract.Tracked.COLUMN_NAME_OLDSTOCK + ", " +
-                    Tracked.COLUMN_NAME_URL + ") VALUES" +
+                    Contract.Tracked.COLUMN_NAME_URL + ") VALUES" +
                     "'Title', 'Image', 'Price', 'Stock', 'Old Price', 'Old Stock', 'URL');";
 
 //}//end SQLMethods
