@@ -42,9 +42,9 @@ public final class Contract {
                     Contract.Tracked.COLUMN_NAME_IMAGE + " TEXT," +
                     Contract.Tracked.COLUMN_NAME_PRICE + " TEXT," +
                     Contract.Tracked.COLUMN_NAME_STOCK + " TEXT," +
-                    Contract.Tracked.COLUMN_NAME_OLDPRICE + "TEXT," +
-                    Contract.Tracked.COLUMN_NAME_OLDSTOCK + "TEXT" +
-                    Contract.Tracked.COLUMN_NAME_URL + "TEXT)";
+                    Contract.Tracked.COLUMN_NAME_OLDPRICE + " TEXT," +
+                    Contract.Tracked.COLUMN_NAME_OLDSTOCK + " TEXT," +
+                    Contract.Tracked.COLUMN_NAME_URL + " TEXT)";
 
     private static final String SQL_DeleteTable =
             "DROP TABLE IF EXISTS " + Contract.Tracked.TABLE_NAME;
@@ -57,13 +57,13 @@ public final class Contract {
                     Contract.Tracked.COLUMN_NAME_STOCK + ", " +
                     Contract.Tracked.COLUMN_NAME_OLDPRICE + ", " +
                     Contract.Tracked.COLUMN_NAME_OLDSTOCK + ", " +
-                    Contract.Tracked.COLUMN_NAME_URL + ") VALUES" +
+                    Contract.Tracked.COLUMN_NAME_URL + " ) VALUES " +
                     "'Title', 'Image', 'Price', 'Stock', 'Old Price', 'Old Stock', 'URL');";
 
 //}//end SQLMethods
 
     public static class TrackerDbHelper extends SQLiteOpenHelper {
-        public static final int DATABASE_VERSION = 1;
+        public static final int DATABASE_VERSION = 2;
         public static final String DATABASE_NAME = "Tracker.db";
 
 
@@ -84,6 +84,9 @@ public final class Contract {
             onUpgrade(db, oldVersion, newVersion);
         }
 
+        public void deleteTable(SQLiteDatabase db){
+            db.execSQL(SQL_DeleteTable);
+        }
 
     }//end TrackerDbHelper
 }//end class Contract

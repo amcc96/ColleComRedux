@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         final SQLiteDatabase dbRead = mDbHelper.getReadableDatabase();
         //mDbHelper.onCreate(db);
         //mDbHelper.deleteTable(db);
+        //mDbHelper.onUpgrade(db, 1, 2);
         enableStrictMode(); //PARSER LINE 1
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         myLayout.removeAllViews();
             //String.format("Table %s:\n", tableName)
         Cursor allRows = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_TITLE + ", " + Contract.Tracked.COLUMN_NAME_PRICE + ", " + Contract.Tracked.COLUMN_NAME_STOCK + " FROM " + tableName, null);
-        Cursor strTag = db.rawQuery("SELECT "+ Contract.Tracked.COLUMN_NAME_TITLE + " FROM "+ tableName, null);
+        Cursor strTag = db.rawQuery("SELECT "+ Contract.Tracked._ID + " FROM "+ tableName, null);
             //Cursor images = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_IMAGE + " FROM " +tableName, null);
             //org.jsoup.nodes.Document doc = Jsoup.connect("https://www.amazon.co.uk/Magic-Gathering-14441-Kaladesh-Bundle/dp/B01LDELE0Q/ref=sr_1_1?ie=UTF8&qid=1522766138&sr=8-1").get();
             //Elements image = doc.select("img#landingImage");
@@ -123,8 +124,8 @@ public class MainActivity extends AppCompatActivity {
             //Bitmap bitmap = BitmapFactory.decodeStream(input);
 
             if (allRows.moveToFirst() && strTag.moveToFirst()) {
-                String[] columnNames = allRows.getColumnNames();
-                String[] tags = strTag.getColumnNames();
+                final String[] columnNames = allRows.getColumnNames();
+                final String[] tags = strTag.getColumnNames();
                 do {
                     for (String name : columnNames) {
                         //PRINT TO TEXTVIEW
@@ -156,13 +157,24 @@ public class MainActivity extends AppCompatActivity {
                     myImage.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            String tagTitle = "";
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(contextNew);
-                            builder2.setTitle("Delete "+myImage.getTag()+"?");
+                            Cursor sqlTitle = db.rawQuery("SELECT "+Contract.Tracked.COLUMN_NAME_TITLE + " FROM " + tableName + " WHERE " + Contract.Tracked._ID + " = '" + myImage.getTag().toString()+"'", null);
+                            if(sqlTitle.moveToFirst()) {
+                                final String[] titles = sqlTitle.getColumnNames();
+                                do {
+                                    for (String title : titles) {
+                                        tagTitle = String.format(sqlTitle.getString(sqlTitle.getColumnIndex(title)));
+                                        Log.e("Tag in Loop", tagTitle);
+                                    }//end for tag
+                                }while(sqlTitle.moveToNext());//end do while
+                            }//end if
+                            builder2.setTitle("Delete "+tagTitle+"?");
                             Log.e("Button", myImage.getTag().toString()+" clicked");
                             builder2.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface2, int i) {
-                                    db.execSQL("DELETE FROM "+ tableName + " WHERE " + Contract.Tracked.COLUMN_NAME_TITLE +" = '"+myImage.getTag().toString()+"'");
+                                    db.execSQL("DELETE FROM "+ tableName + " WHERE " + Contract.Tracked._ID +" = '"+myImage.getTag().toString()+"'");
                                     Log.e("Query info", tableName + " " + myImage.getTag().toString());
                                     getTableAsString(db, Contract.Tracked.TABLE_NAME);
                                 }
