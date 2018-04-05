@@ -77,11 +77,10 @@ public class Parser {
             return values;
         }//end itemRetrieve
 
-    private static void compareItem(SQLiteDatabase db, String tableName, String url){
+    public static void compareItem(SQLiteDatabase db, String tableName, String url){
         try {
             System.setProperty("javax.net.ssl.trustStore", "C:/Users/Andrew/AndroidStudioProjects/ColleComEX/wwwamazoncouk.jks");
             Document doc = null;
-            String title = doc.title();
             doc = Jsoup.connect(url).get();
             Elements newPrice = doc.select("span#priceblock_ourprice");
             Elements newStock = doc.select("div#availability");
@@ -90,16 +89,19 @@ public class Parser {
             String compareStock = "";
             Cursor sqlPrice = db.rawQuery("SELECT "+Contract.Tracked.COLUMN_NAME_PRICE + " FROM " + tableName + " WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + url + "'", null);
             Cursor sqlStock = db.rawQuery("SELECT "+Contract.Tracked.COLUMN_NAME_STOCK + " FROM " + tableName + " WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + url + "'", null);
-            if(sqlPrice.moveToFirst()) {
-                final String[] titles = sqlPrice.getColumnNames();
+            if(sqlPrice.moveToFirst()  && sqlStock.moveToFirst()) {
+                final String[] prices = sqlPrice.getColumnNames();
+                final String[] stocks = sqlStock.getColumnNames();
                 do {
-                    for (String loop : titles) {
+                    for (String loop : prices) {
                         comparePrice = String.format(sqlPrice.getString(sqlPrice.getColumnIndex(loop)));
-                        compareStock = String.format(sqlStock.getString(sqlStock.getColumnIndex(loop)));
                         Log.e("Price in Loop", comparePrice);
+                    }//end for loop
+                    for(String loop2 : stocks){
+                        compareStock = String.format(sqlStock.getString(sqlStock.getColumnIndex(loop2)));
                         Log.e("Stock in Loop", compareStock);
-                    }//end for tag
-                }while(sqlPrice.moveToNext());//end do while
+                    }//end for loop
+                }while(sqlPrice.moveToNext() && sqlStock.moveToNext());//end do while
             }//end if
 
             Log.e("Compared Price", newPrice.text());
@@ -108,15 +110,17 @@ public class Parser {
                 if(newPrice.text() != comparePrice){
                     db.execSQL("UPDATE "+ tableName+" SET "+Contract.Tracked.COLUMN_NAME_OLDPRICE +" = '"+Contract.Tracked.COLUMN_NAME_PRICE+"', "+Contract.Tracked.COLUMN_NAME_PRICE+" = '"+newPrice.text()+"' WHERE "+ Contract.Tracked.COLUMN_NAME_URL +" = '"+url+"';");
                     //PUSH NOTIFICATION
+                    Log.e("Price Difference", "SQL Executed");
                 }//end if price
                 if(newStock.text() != compareStock){
                     db.execSQL("UPDATE "+ tableName+" SET "+Contract.Tracked.COLUMN_NAME_OLDSTOCK +" = '"+Contract.Tracked.COLUMN_NAME_STOCK+"', "+Contract.Tracked.COLUMN_NAME_STOCK+" = '"+newStock.text()+"' WHERE "+ Contract.Tracked.COLUMN_NAME_URL +" = '"+url+"';");
                     //PUSH NOTIFICATION
+                    Log.e("Stock Difference", "SQL Executed");
                 }//end if stock
             }//end for
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }//end try catch
 
     }//end compareItem
 

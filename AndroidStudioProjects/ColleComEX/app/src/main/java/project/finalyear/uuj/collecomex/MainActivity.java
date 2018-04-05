@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         m_Text = input.getText().toString();
                         long newRowId = db.insert(Contract.Tracked.TABLE_NAME, null, Parser.itemRetrieve(m_Text)); //PARSER LINE 2
+                        Parser.compareItem(dbRead, Contract.Tracked.TABLE_NAME, m_Text);
                         getTableAsString(db, Contract.Tracked.TABLE_NAME);
                         Log.e("INPUT TEXT", m_Text);
                     }
@@ -92,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
         //GET TABLE AS STRING
         getTableAsString(dbRead, Contract.Tracked.TABLE_NAME);
+
 
     }//end onCreate
 

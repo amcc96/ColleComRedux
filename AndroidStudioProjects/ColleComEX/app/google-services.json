@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "660179345017",
+    "firebase_url": "https://trackerlist-60515.firebaseio.com",
+    "project_id": "trackerlist-60515",
+    "storage_bucket": "trackerlist-60515.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660179345017:android:68fdabc5658f220a",
+        "android_client_info": {
+          "package_name": "project.finalyear.uuj.collecomex"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "660179345017-irk1eij4jb5vdadgmm9ghr2m2ne2if3i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPrkHa2dy2v_1IkTtw3PuGkhOiQjKyvVg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
