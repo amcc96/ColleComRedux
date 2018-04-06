@@ -2,12 +2,22 @@ package project.finalyear.uuj.collecomex;
 /**
  * Created by Andrew on 17/03/2018.
  */
+import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.TextView;
+
+import com.google.firebase.messaging.RemoteMessage;
 
 import org.jsoup.Jsoup;
 import org.jsoup.helper.HttpConnection;
@@ -27,6 +37,8 @@ public class Parser {
     //String name = "";
     String price = "";
     String stock = "";
+    Boolean update = false;
+    private static final String TAG = "FCM Service";
     static String folder = "ColleComImages";
 
     //    public static String itemRetrieve(String url){
@@ -76,6 +88,8 @@ public class Parser {
             }//catch
             return values;
         }//end itemRetrieve
+
+
 
     public static void compareItem(SQLiteDatabase db, String tableName, String url){
         try {

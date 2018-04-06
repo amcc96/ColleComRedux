@@ -1,18 +1,31 @@
 package project.finalyear.uuj.collecomex;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.*;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.BaseColumns;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -25,6 +38,8 @@ import android.widget.ImageButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import com.google.firebase.messaging.RemoteMessage;
 
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
@@ -41,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     final Context contextNew = this;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
         final Contract.TrackerDbHelper mDbHelper = new Contract.TrackerDbHelper(contextNew);
-        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        final  SQLiteDatabase db = mDbHelper.getWritableDatabase();
         final SQLiteDatabase dbRead = mDbHelper.getReadableDatabase();
         //mDbHelper.onCreate(db);
         //mDbHelper.deleteTable(db);
@@ -75,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                         long newRowId = db.insert(Contract.Tracked.TABLE_NAME, null, Parser.itemRetrieve(m_Text)); //PARSER LINE 2
                         Parser.compareItem(dbRead, Contract.Tracked.TABLE_NAME, m_Text);
                         getTableAsString(db, Contract.Tracked.TABLE_NAME);
+                        createNotification("Body", "Title");
                         Log.e("INPUT TEXT", m_Text);
                     }
                 });//END POSITIVE LISTENER
@@ -93,8 +110,8 @@ public class MainActivity extends AppCompatActivity {
 
         //GET TABLE AS STRING
         getTableAsString(dbRead, Contract.Tracked.TABLE_NAME);
-
-
+        //createNotification("This is the message body", "Title");
+        Log.e("createNotification", "Called");
     }//end onCreate
 
     public void enableStrictMode(){
@@ -218,5 +235,53 @@ public class MainActivity extends AppCompatActivity {
 
             //return tableString;
     }//end GETTABLEASSTRING
+
+    //@RequiresApi(api = Build.VERSION_CODES.O)
+    public void onItemUpdate(){
+
+        Log.d(TAG, "Title");
+        Log.d(TAG, "Message Body");
+        createNotification("Hello this is the message body", "Title");
+    }//end onMessageReceived
+
+
+    //@RequiresApi(api = Build.VERSION_CODES.O)
+    public void createNotification(String messageBody, String messageTitle){
+        Log.e("createNotification", "Running");
+        String CHANNEL_ID = "Tracker";
+
+        Intent intent = new Intent(this, android.app.AlertDialog.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        Uri notificationSoundURI = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(messageTitle)
+                .setContentText(messageBody)
+                .setAutoCancel(true)
+                .setSound(notificationSoundURI)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent);
+                //.setChannelId(CHANNEL_ID).build()
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            // Create the NotificationChannel, but only on API 26+ because
+            // the NotificationChannel class is new and not in the support library
+            CharSequence name = "Tracker";
+            String description = "Tracks items";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system
+            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        //notificationManager.createNotificationChannel(mChannel);
+        notificationManager.notify(1, mBuilder.build());
+
+    }//end createNotification
 
 }//END MAIN ACTIVITY
