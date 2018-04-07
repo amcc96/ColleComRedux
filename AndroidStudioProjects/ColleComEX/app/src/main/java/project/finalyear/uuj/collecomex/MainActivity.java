@@ -16,6 +16,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,6 +28,34 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
     private String m_Text = "";
     final Context contextNew = this;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.sub_menu, menu);
+        return true;
+    }//end onCreateOptionsMenu
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        final Contract.TrackerDbHelper mDbHelper = new Contract.TrackerDbHelper(contextNew);
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        final SQLiteDatabase dbRead = mDbHelper.getReadableDatabase();
+        switch(item.getItemId()){
+            case R.id.refresh:
+                Parser.compareItem(dbRead);
+                getTableAsString(db, Contract.Tracked.TABLE_NAME);
+                break;
+            case R.id.credits:
+                //insert action
+                break;
+            case R.id.help:
+                //insert action
+                break;
+                default:
+                    return super.onOptionsItemSelected(item);
+        }//end switch
+        return true;
+    }//end onOptionsItemSelected
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -21,10 +21,7 @@ public class Parser {
         int index = givenUrl.indexOf("https://");
         String url = givenUrl.substring(index, givenUrl.length());
         String sourceCheck = givenUrl.substring(index, index+13);
-        //String sourceCheck2 = givenUrl.substring(index, index+12);
         Log.e("Source check", sourceCheck);
-        //Log.e("Source check 2", sourceCheck2);
-
         Log.e("New URL", url);
 
         if(sourceCheck.equalsIgnoreCase("https://www.a")) {
@@ -81,56 +78,109 @@ public class Parser {
 
     public static Boolean compareItem(SQLiteDatabase db){
         Boolean update = false;
+        String sourceCheck = "";
+        int index = 0;
         try {
             String strURL = "";
-            Cursor url = db.rawQuery("SELECT "+Contract.Tracked.COLUMN_NAME_URL + " FROM " + Contract.Tracked.TABLE_NAME, null);
-            if(url.moveToFirst()){
-                final String[]urls = url.getColumnNames();
+            Cursor crsUrl = db.rawQuery("SELECT "+Contract.Tracked.COLUMN_NAME_URL + " FROM " + Contract.Tracked.TABLE_NAME, null);
+            if(crsUrl.moveToFirst()){
+                final String[]urls = crsUrl.getColumnNames();
                 do {
                     for (String loop : urls) {
-                        strURL = String.format(url.getString(url.getColumnIndex(loop)));
-                        System.setProperty("javax.net.ssl.trustStore", "C:/Users/Andrew/AndroidStudioProjects/ColleComEX/wwwamazoncouk.jks");
-                        Document doc = null;
-                        Log.e("URLS.TOSTRING", strURL);
-                        doc = Jsoup.connect(strURL).get();
-                        Elements newPrice = doc.select("span#priceblock_ourprice");
-                        Elements newStock = doc.select("div#availability");
+                        strURL = crsUrl.getString(crsUrl.getColumnIndex(loop));
+                        index = strURL.indexOf("https://");
+                        sourceCheck = strURL.substring(index, index+13);
+                        if(sourceCheck.equalsIgnoreCase("https://www.a")) {
+                            System.setProperty("javax.net.ssl.trustStore", "C:/Users/Andrew/AndroidStudioProjects/ColleComEX/wwwamazoncouk.jks");
+                            Document doc = null;
+                            Log.e("URLS.TOSTRING", strURL);
+                            doc = Jsoup.connect(strURL).get();
+                            Elements newPrice = doc.select("span#priceblock_ourprice");
+                            Elements newStock = doc.select("div#availability");
 
-                        String comparePrice = "";
-                        String compareStock = "";
-                        Cursor sqlPrice = db.rawQuery("SELECT "+Contract.Tracked.COLUMN_NAME_PRICE + " FROM " + Contract.Tracked.TABLE_NAME + " WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + strURL + "'", null);
-                        Cursor sqlStock = db.rawQuery("SELECT "+Contract.Tracked.COLUMN_NAME_STOCK + " FROM " + Contract.Tracked.TABLE_NAME + " WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + strURL + "'", null);
-                            if(sqlPrice.moveToFirst()  && sqlStock.moveToFirst()) {
+                            String comparePrice = "";
+                            String compareStock = "";
+                            Cursor sqlPrice = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_PRICE + " FROM " + Contract.Tracked.TABLE_NAME + " WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + strURL + "'", null);
+                            Cursor sqlStock = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_STOCK + " FROM " + Contract.Tracked.TABLE_NAME + " WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + strURL + "'", null);
+                            if (sqlPrice.moveToFirst() && sqlStock.moveToFirst()) {
                                 final String[] prices = sqlPrice.getColumnNames();
                                 final String[] stocks = sqlStock.getColumnNames();
                                 do {
                                     for (String loop2 : prices) {
-                                        comparePrice = String.format(sqlPrice.getString(sqlPrice.getColumnIndex(loop2)));
+                                        comparePrice = sqlPrice.getString(sqlPrice.getColumnIndex(loop2));
                                         Log.e("Price in Loop", comparePrice);
                                     }//end for loop
-                                    for(String loop2 : stocks){
-                                        compareStock = String.format(sqlStock.getString(sqlStock.getColumnIndex(loop2)));
+                                    for (String loop2 : stocks) {
+                                        compareStock = sqlStock.getString(sqlStock.getColumnIndex(loop2));
                                         Log.e("Stock in Loop", compareStock);
                                     }//end for loop
-                                }while(sqlPrice.moveToNext() && sqlStock.moveToNext());//end do while
+                                }
+                                while (sqlPrice.moveToNext() && sqlStock.moveToNext());//end do while
                             }//end if
                             Log.e("New Price", newPrice.text());
                             Log.e("Compared Price", comparePrice);
-                            for(Element link : newPrice){
-                                if(!newPrice.text().equalsIgnoreCase(comparePrice)){
-                                    db.execSQL("UPDATE "+ Contract.Tracked.TABLE_NAME +" SET "+Contract.Tracked.COLUMN_NAME_OLDPRICE +" = '"+Contract.Tracked.COLUMN_NAME_PRICE+"', "+Contract.Tracked.COLUMN_NAME_PRICE+" = '"+newPrice.text()+"' WHERE "+ Contract.Tracked.COLUMN_NAME_URL +" = '"+strURL+"';");
+                            for (Element link : newPrice) {
+                                if (!newPrice.text().equalsIgnoreCase(comparePrice)) {
+                                    db.execSQL("UPDATE " + Contract.Tracked.TABLE_NAME + " SET " + Contract.Tracked.COLUMN_NAME_OLDPRICE + " = '" + Contract.Tracked.COLUMN_NAME_PRICE + "', " + Contract.Tracked.COLUMN_NAME_PRICE + " = '" + newPrice.text() + "' WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + strURL + "';");
                                     update = true;
                                     Log.e("Price Difference", "SQL Executed");
                                 }//end if price
-                                if(!newStock.text().equalsIgnoreCase(compareStock)){
-                                    db.execSQL("UPDATE "+ Contract.Tracked.TABLE_NAME +" SET "+Contract.Tracked.COLUMN_NAME_OLDSTOCK +" = '"+Contract.Tracked.COLUMN_NAME_STOCK+"', "+Contract.Tracked.COLUMN_NAME_STOCK+" = '"+newStock.text()+"' WHERE "+ Contract.Tracked.COLUMN_NAME_URL +" = '"+strURL+"';");
+                                if (!newStock.text().equalsIgnoreCase(compareStock)) {
+                                    db.execSQL("UPDATE " + Contract.Tracked.TABLE_NAME + " SET " + Contract.Tracked.COLUMN_NAME_OLDSTOCK + " = '" + Contract.Tracked.COLUMN_NAME_STOCK + "', " + Contract.Tracked.COLUMN_NAME_STOCK + " = '" + newStock.text() + "' WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + strURL + "';");
                                     update = true;
                                     Log.e("Stock Difference", "SQL Executed");
                                 }//end if stock
                             }//end for
+                            sqlPrice.close();
+                            sqlStock.close();
+                        }else if(sourceCheck.equalsIgnoreCase("https://rover")){
+                            System.setProperty("javax.net.ssl.trustStore", "C:/Users/Andrew/AndroidStudioProjects/ColleComEX/wwwebaycom.jks");
+                            Document doc = null;
+                            Log.e("URLS.TOSTRING", strURL);
+                            doc = Jsoup.connect(strURL).get();
+                            Elements newPrice = doc.select("span#prcIsum");
+                            Elements newStock = doc.select("span#vi-cdown_timeLeft");
+
+                            String comparePrice = "";
+                            String compareStock = "";
+                            Cursor sqlPrice = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_PRICE + " FROM " + Contract.Tracked.TABLE_NAME + " WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + strURL + "'", null);
+                            Cursor sqlStock = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_STOCK + " FROM " + Contract.Tracked.TABLE_NAME + " WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + strURL + "'", null);
+                            if (sqlPrice.moveToFirst() && sqlStock.moveToFirst()) {
+                                final String[] prices = sqlPrice.getColumnNames();
+                                final String[] stocks = sqlStock.getColumnNames();
+                                do {
+                                    for (String loop2 : prices) {
+                                        comparePrice = sqlPrice.getString(sqlPrice.getColumnIndex(loop2));
+                                        Log.e("Price in Loop", comparePrice);
+                                    }//end for loop
+                                    for (String loop2 : stocks) {
+                                        compareStock = sqlStock.getString(sqlStock.getColumnIndex(loop2));
+                                        Log.e("Stock in Loop", compareStock);
+                                    }//end for loop
+                                }
+                                while (sqlPrice.moveToNext() && sqlStock.moveToNext());//end do while
+                            }//end if
+                            Log.e("New Price", newPrice.text());
+                            Log.e("Compared Price", comparePrice);
+                            for (Element link : newPrice) {
+                                if (!newPrice.text().equalsIgnoreCase(comparePrice)) {
+                                    db.execSQL("UPDATE " + Contract.Tracked.TABLE_NAME + " SET " + Contract.Tracked.COLUMN_NAME_OLDPRICE + " = '" + Contract.Tracked.COLUMN_NAME_PRICE + "', " + Contract.Tracked.COLUMN_NAME_PRICE + " = '" + newPrice.text() + "' WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + strURL + "';");
+                                    update = true;
+                                    Log.e("Price Difference", "SQL Executed");
+                                }//end if price
+                                if (!newStock.text().equalsIgnoreCase(compareStock)) {
+                                    db.execSQL("UPDATE " + Contract.Tracked.TABLE_NAME + " SET " + Contract.Tracked.COLUMN_NAME_OLDSTOCK + " = '" + Contract.Tracked.COLUMN_NAME_STOCK + "', " + Contract.Tracked.COLUMN_NAME_STOCK + " = '" + newStock.text() + "' WHERE " + Contract.Tracked.COLUMN_NAME_URL + " = '" + strURL + "';");
+                                    update = true;
+                                    Log.e("Stock Difference", "SQL Executed");
+                                }//end if stock
+                            }//end for
+                            sqlPrice.close();
+                            sqlStock.close();
+                        }
                     }//end URL FOR
-                }while(url.moveToNext());
+                }while(crsUrl.moveToNext());
             }//end URL IF
+            crsUrl.close();
         } catch (IOException e) {
             e.printStackTrace();
         }//end try catch
