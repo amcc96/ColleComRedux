@@ -2,16 +2,9 @@ package project.finalyear.uuj.collecomex; /**
  * Created by Andrew on 17/03/2018.
  */
 import android.content.Context;
-import android.database.Cursor;
-import android.database.MatrixCursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
-import android.util.Log;
-
-import java.util.ArrayList;
-
 /**
  * Created by Andrew on 01/03/2018.
  */
@@ -33,7 +26,6 @@ public final class Contract {
         public static final String COLUMN_NAME_OLDPRICE ="oldPrice";
         public static final String COLUMN_NAME_URL = "url";
     }//end Tracked class
-//test comment
 
     private static final String SQL_CreateTable =
             "CREATE TABLE " + Contract.Tracked.TABLE_NAME + " (" +
