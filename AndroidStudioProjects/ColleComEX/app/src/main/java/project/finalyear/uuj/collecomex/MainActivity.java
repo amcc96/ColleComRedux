@@ -6,10 +6,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.*;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AlertDialog;
@@ -28,9 +27,6 @@ public class MainActivity extends AppCompatActivity {
     private String m_Text = "";
     final Context contextNew = this;
 
-
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,9 +37,7 @@ public class MainActivity extends AppCompatActivity {
         final Contract.TrackerDbHelper mDbHelper = new Contract.TrackerDbHelper(contextNew);
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
         final SQLiteDatabase dbRead = mDbHelper.getReadableDatabase();
-        //mDbHelper.onCreate(db);
-        //mDbHelper.deleteTable(db);
-        //mDbHelper.onUpgrade(db, 1, 2);
+
         enableStrictMode(); //PARSER LINE 1
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,33 +71,24 @@ public class MainActivity extends AppCompatActivity {
                 builder.show();
             }
         });//END ONCLICKLISTENER
-
-        Log.e("Parser", "Parser run ended");
         //contextNew.deleteDatabase(mDbHelper.getDatabaseName()); //FAILSAFE DELETE DATABASE
-
-        //GET TABLE AS STRING
-        getTableAsString(dbRead, Contract.Tracked.TABLE_NAME);
-        //startTimer();
-        //createNotification("This is the message body", "Title");
-        //Log.e("createNotification", "Called");
 
         Intent i = new Intent(contextNew, TrackerMessagingService.class);
         contextNew.startService(i);
 
+        //GET TABLE AS STRING
+        getTableAsString(dbRead, Contract.Tracked.TABLE_NAME);
+
     }//end onCreate
 
-    public void enableStrictMode(){
+    private void enableStrictMode(){
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
         StrictMode.setThreadPolicy(policy);
     }//end enableStrictMode
 
-    String TAG = "DbHelper";
-
-
-
-    public void getTableAsString(final SQLiteDatabase db, final String tableName) {
-        Log.d(TAG, "getTableAsString called");
+    private void getTableAsString(final SQLiteDatabase db, final String tableName) {
+        Log.d("Method", "getTableAsString called");
         String tableString = "";
         String tagString = "";
         int imageResource;
@@ -123,15 +108,14 @@ public class MainActivity extends AppCompatActivity {
                         tableString += "\n";
                         Log.v("tableString", tableString);
                     }//end for table output
-
                     for (String tag : tags){
                         tagString = String.format(strTag.getString(strTag.getColumnIndex(tag)));
                         Log.e("Tag in Loop", tagString);
                     }//end for tag
 
-                    //CREATE TEXTVIEW
-                    TextView myView = new TextView(this);
-                    myView.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                    //CREATE TABLEROW
+                    TableRow myRow = new TableRow(this);
+                    myRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
 
                     //CREATE IMAGEBUTTON
                     final Button myImage = new Button(this);
@@ -166,18 +150,35 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface2, int i) {
                                     dialogInterface2.cancel();
-                                }
+                                }//end onClick
                             });//END setNegativeButton
                             builder2.show();
-
                         }// END onClick
                     });//END onClickListener
+
+                    //CREATE TEXTVIEW
+                    TextView myView = new TextView(this);
+                    myView.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                    myView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String urlClick = "";
+                            Cursor sqlURL = db.rawQuery("SELECT "+Contract.Tracked.COLUMN_NAME_URL + " FROM "+ tableName+ " WHERE " + Contract.Tracked._ID + " = " + myImage.getTag().toString(),null);
+                            if(sqlURL.moveToFirst()){
+                                final String[] urls = sqlURL.getColumnNames();
+                                do{
+                                    for(String url : urls){
+                                        urlClick = String.format(sqlURL.getString(sqlURL.getColumnIndex(url)));
+                                        Log.e("URL to open", urlClick);
+                                    }
+                                }while(sqlURL.moveToNext());
+                            }//end if
+                            openItem(urlClick);
+                        }//end onClick
+                    });//end onClickListener
+
                     Log.e("Button tag", myImage.getTag().toString());
                     //myImage.setImageBitmap(bitmap);
-
-                    //CREATE TABLEROW
-                    TableRow myRow = new TableRow(this);
-                    myRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
 
                     //ADD NEW VIEWS
                     myView.setText(tableString);
@@ -193,4 +194,8 @@ public class MainActivity extends AppCompatActivity {
             }//en if
     }//end GETTABLEASSTRING
 
+    private void openItem(String url){
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(intent);
+    }
 }//END MAIN ACTIVITY

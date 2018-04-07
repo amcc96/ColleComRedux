@@ -26,9 +26,6 @@ public class TrackerMessagingService extends Service {
     private Handler mTimerHandler = new Handler();
     Context context = this;
 
-    /*public TrackerService() {
-    }*/
-
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -36,12 +33,8 @@ public class TrackerMessagingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startID){
-        //Parser.compareItem();
         Log.e("onStartCommand", "running");
         startTimer();
-        //createNotification("Hello this is the message body", "Title");
-
-        //return super.onStartCommand(intent, flags, startID);
         return START_STICKY;
     }//end onStartCommand
 
