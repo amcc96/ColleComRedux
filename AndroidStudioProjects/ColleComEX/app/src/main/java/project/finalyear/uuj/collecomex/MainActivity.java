@@ -45,11 +45,39 @@ public class MainActivity extends AppCompatActivity {
                 Parser.compareItem(dbRead);
                 getTableAsString(db, Contract.Tracked.TABLE_NAME);
                 break;
+                //END REFRESH BUTTON
             case R.id.credits:
-                //insert action
+                final AlertDialog.Builder creditsBuilder = new AlertDialog.Builder(contextNew);
+                creditsBuilder.setTitle("Credits");
+                final TextView creditsText = new TextView(contextNew);
+                creditsText.setText("\n   Andrew McCollam (B00665460)\n   Final Year Project 2017/18 \n   Mentor: Roy Steritt");
+                creditsBuilder.setView(creditsText);
+                creditsBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }//end onClick
+                });//end setPositiveButton
+                creditsBuilder.show();
+                //END CREDITS BUTTON
                 break;
             case R.id.help:
-                //insert action
+                final AlertDialog.Builder helpBuilder = new AlertDialog.Builder(contextNew);
+                helpBuilder.setTitle("Help");
+                final TextView helpText = new TextView(contextNew);
+                helpText.setText("\n    How to use this app:\n     1) Copy a URL from either eBay or Amazon. \n          This can be found in each app's \n         'share' button " +
+                                "\n\n     2) Click on the '+' in the bottom right of this \n         app's main screen \n\n    3) Paste the link in the dialog box, and click 'OK'" +
+                                "\n\n     4) Tracking will now begin automatically \n\n     5) To delete an item, click on the button \n         to the left of it" +
+                                "\n\n     6) To open an item in your browser, click \n           on the item's text");
+                helpBuilder.setView(helpText);
+                helpBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }//end onClick
+                });//end setPositiveButton
+                helpBuilder.show();
+                //END HELP BUTTON
                 break;
                 default:
                     return super.onOptionsItemSelected(item);
@@ -80,17 +108,37 @@ public class MainActivity extends AppCompatActivity {
                 //Type of input expected
                 input.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT);
                 builder.setView(input);
-
                 //Buttons
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         m_Text = input.getText().toString();
-                        long newRowId = db.insert(Contract.Tracked.TABLE_NAME, null, Parser.itemRetrieve(m_Text)); //PARSER LINE 2
-                        //Parser.compareItem(dbRead);
-                        getTableAsString(db, Contract.Tracked.TABLE_NAME);
-                        Log.e("INPUT TEXT", m_Text);
-                    }
+                        int index = m_Text.indexOf("https://");
+
+                        String url = m_Text.substring(index, m_Text.length());
+                        String sourceCheck = m_Text.substring(index, index+13);
+                        Log.e("MainActivity.java src", sourceCheck);
+                        if(sourceCheck.equalsIgnoreCase("https://www.a") || sourceCheck.equalsIgnoreCase("https://rover") || sourceCheck.equalsIgnoreCase("https://www.e")) {
+                            long newRowId = db.insert(Contract.Tracked.TABLE_NAME, null, Parser.itemRetrieve(m_Text)); //PARSER LINE 2
+                            //Parser.compareItem(dbRead);
+                            getTableAsString(db, Contract.Tracked.TABLE_NAME);
+                            Log.e("INPUT TEXT", m_Text);
+                        }else {
+                            dialogInterface.cancel();
+                            final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(contextNew);
+                            alertBuilder.setTitle("ALERT!");
+                            final TextView alertText = new TextView(contextNew);
+                            alertText.setText("\n   Error: Invalid URL, please use from either \n   eBay or Amazon");
+                            alertBuilder.setView(alertText);
+                            alertBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }//end onClick
+                            });//end setPositiveButton
+                            alertBuilder.show();
+                        }//end if else
+                    }//end onClick
                 });//END POSITIVE LISTENER
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
@@ -198,12 +246,13 @@ public class MainActivity extends AppCompatActivity {
                                 final String[] urls = sqlURL.getColumnNames();
                                 do{
                                     for(String url : urls){
-                                        urlClick = String.format(sqlURL.getString(sqlURL.getColumnIndex(url)));
+                                        urlClick = (sqlURL.getString(sqlURL.getColumnIndex(url)));
                                         Log.e("URL to open", urlClick);
                                     }
                                 }while(sqlURL.moveToNext());
                             }//end if
                             openItem(urlClick);
+                            sqlURL.close();
                         }//end onClick
                     });//end onClickListener
 

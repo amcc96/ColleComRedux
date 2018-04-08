@@ -53,7 +53,6 @@ public class TrackerMessagingService extends Service {
                 mTimerHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        //TODO
                         try {
                             final Contract.TrackerDbHelper mDbHelper = new Contract.TrackerDbHelper(context);
                             final SQLiteDatabase db = mDbHelper.getWritableDatabase();
@@ -65,6 +64,7 @@ public class TrackerMessagingService extends Service {
                             //createNotification("Body", "Title");
                         }catch(Exception e){
                             Log.v("Exception", "Timer exception caught");
+                            Log.v("Exception", e.toString());
                         }//end catch
                     }//end run
                 });
