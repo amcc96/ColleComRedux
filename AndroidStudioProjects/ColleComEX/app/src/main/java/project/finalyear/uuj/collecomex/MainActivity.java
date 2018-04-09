@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -231,12 +232,12 @@ public class MainActivity extends AppCompatActivity {
                 do {
                     for (String name : columnNames) {
                         //PRINT TO TEXTVIEW
-                        tableString += String.format(allRows.getString(allRows.getColumnIndex(name)));
+                        tableString += (allRows.getString(allRows.getColumnIndex(name)));
                         tableString += "\n";
                         Log.v("tableString", tableString);
                     }//end for table output
                     for (String tag : tags) {
-                        tagString = String.format(strTag.getString(strTag.getColumnIndex(tag)));
+                        tagString = (strTag.getString(strTag.getColumnIndex(tag)));
                         Log.e("Tag in Loop", tagString);
                     }//end for tag
 
@@ -245,9 +246,10 @@ public class MainActivity extends AppCompatActivity {
                     myRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
 
                     //CREATE IMAGEBUTTON
-                    final Button myImage = new Button(this);
+                    final ImageButton myImage = new ImageButton(this);
                     myImage.setLayoutParams(new TableRow.LayoutParams(172, 177));
                     myImage.setTag(tagString);
+                    myImage.setImageResource(R.drawable.delete_icon);
                     myImage.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -317,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
                     tableString = "";
                     Log.e("print", "Layouts should be added");
                 } while (allRows.moveToNext() && strTag.moveToNext());
-            }//en if
+            }//end if
         }catch(Exception e){
             Log.v("getTableAsString()", "Caught: " +e.toString());
         }//end try catch
