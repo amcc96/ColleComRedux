@@ -35,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }//end onCreateOptionsMenu
 
+
+    
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         final Contract.TrackerDbHelper mDbHelper = new Contract.TrackerDbHelper(contextNew);
@@ -120,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("MainActivity.java src", sourceCheck);
                         if(sourceCheck.equalsIgnoreCase("https://www.a") || sourceCheck.equalsIgnoreCase("https://rover") || sourceCheck.equalsIgnoreCase("https://www.e")) {
                             long newRowId = db.insert(Contract.Tracked.TABLE_NAME, null, Parser.itemRetrieve(m_Text)); //PARSER LINE 2
-                            //Parser.compareItem(dbRead);
                             getTableAsString(db, Contract.Tracked.TABLE_NAME);
                             Log.e("INPUT TEXT", m_Text);
                         }else {
@@ -144,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.cancel();
-                    }
+                    }//end onClick
                 });//END NEGATIVE LISTENER
                 builder.show();
             }
@@ -156,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
 
         //GET TABLE AS STRING
         getTableAsString(dbRead, Contract.Tracked.TABLE_NAME);
-
     }//end onCreate
 
     private void enableStrictMode(){
@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         myLayout.removeAllViews();
         Cursor allRows = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_TITLE + ", " + Contract.Tracked.COLUMN_NAME_PRICE + ", " + Contract.Tracked.COLUMN_NAME_STOCK + " FROM " + tableName, null);
         Cursor strTag = db.rawQuery("SELECT "+ Contract.Tracked._ID + " FROM "+ tableName, null);
-
+        try {
             if (allRows.moveToFirst() && strTag.moveToFirst()) {
                 final String[] columnNames = allRows.getColumnNames();
                 final String[] tags = strTag.getColumnNames();
@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
                         tableString += "\n";
                         Log.v("tableString", tableString);
                     }//end for table output
-                    for (String tag : tags){
+                    for (String tag : tags) {
                         tagString = String.format(strTag.getString(strTag.getColumnIndex(tag)));
                         Log.e("Tag in Loop", tagString);
                     }//end for tag
@@ -204,25 +204,25 @@ public class MainActivity extends AppCompatActivity {
                         public void onClick(View view) {
                             String tagTitle = "";
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(contextNew);
-                            Cursor sqlTitle = db.rawQuery("SELECT "+Contract.Tracked.COLUMN_NAME_TITLE + " FROM " + tableName + " WHERE " + Contract.Tracked._ID + " = '" + myImage.getTag().toString()+"'", null);
-                            if(sqlTitle.moveToFirst()) {
+                            Cursor sqlTitle = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_TITLE + " FROM " + tableName + " WHERE " + Contract.Tracked._ID + " = '" + myImage.getTag().toString() + "'", null);
+                            if (sqlTitle.moveToFirst()) {
                                 final String[] titles = sqlTitle.getColumnNames();
                                 do {
                                     for (String title : titles) {
                                         tagTitle = String.format(sqlTitle.getString(sqlTitle.getColumnIndex(title)));
                                         Log.e("Tag in Loop", tagTitle);
                                     }//end for tag
-                                }while(sqlTitle.moveToNext());//end do while
+                                } while (sqlTitle.moveToNext());//end do while
                             }//end if
-                            builder2.setTitle("Delete "+tagTitle+"?");
-                            Log.e("Button", myImage.getTag().toString()+" clicked");
+                            builder2.setTitle("Delete " + tagTitle + "?");
+                            Log.e("Button", myImage.getTag().toString() + " clicked");
                             builder2.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface2, int i) {
-                                    db.execSQL("DELETE FROM "+ tableName + " WHERE " + Contract.Tracked._ID +" = '"+myImage.getTag().toString()+"'");
+                                    db.execSQL("DELETE FROM " + tableName + " WHERE " + Contract.Tracked._ID + " = '" + myImage.getTag().toString() + "'");
                                     Log.e("Query info", tableName + " " + myImage.getTag().toString());
                                     getTableAsString(db, Contract.Tracked.TABLE_NAME);
-                                }
+                                }//end onClick
                             });//END setPositiveButton
                             builder2.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                 @Override
@@ -241,23 +241,21 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(View v) {
                             String urlClick = "";
-                            Cursor sqlURL = db.rawQuery("SELECT "+Contract.Tracked.COLUMN_NAME_URL + " FROM "+ tableName+ " WHERE " + Contract.Tracked._ID + " = " + myImage.getTag().toString(),null);
-                            if(sqlURL.moveToFirst()){
+                            Cursor sqlURL = db.rawQuery("SELECT " + Contract.Tracked.COLUMN_NAME_URL + " FROM " + tableName + " WHERE " + Contract.Tracked._ID + " = " + myImage.getTag().toString(), null);
+                            if (sqlURL.moveToFirst()) {
                                 final String[] urls = sqlURL.getColumnNames();
-                                do{
-                                    for(String url : urls){
+                                do {
+                                    for (String url : urls) {
                                         urlClick = (sqlURL.getString(sqlURL.getColumnIndex(url)));
                                         Log.e("URL to open", urlClick);
-                                    }
-                                }while(sqlURL.moveToNext());
+                                    }//end for
+                                } while (sqlURL.moveToNext());
                             }//end if
                             openItem(urlClick);
                             sqlURL.close();
                         }//end onClick
                     });//end onClickListener
-
                     Log.e("Button tag", myImage.getTag().toString());
-                    //myImage.setImageBitmap(bitmap);
 
                     //ADD NEW VIEWS
                     myView.setText(tableString);
@@ -269,12 +267,20 @@ public class MainActivity extends AppCompatActivity {
                     tagString = "";
                     tableString = "";
                     Log.e("print", "Layouts should be added");
-                } while (allRows.moveToNext() &&strTag.moveToNext());
+                } while (allRows.moveToNext() && strTag.moveToNext());
             }//en if
+        }catch(Exception e){
+            Log.v("getTableAsString()", "Caught: " +e.toString());
+        }//end try catch
     }//end GETTABLEASSTRING
 
     private void openItem(String url){
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        startActivity(intent);
-    }
+        try {
+            startActivity(intent);
+        }catch(Exception i){
+            Log.v("openItem()", "Caught:" + i.toString());
+        }//end try catch
+    }//emd openItem
+
 }//END MAIN ACTIVITY

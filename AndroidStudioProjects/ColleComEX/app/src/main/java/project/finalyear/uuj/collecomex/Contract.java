@@ -52,8 +52,6 @@ public final class Contract {
                     Contract.Tracked.COLUMN_NAME_URL + " ) VALUES " +
                     "'Title', 'Image', 'Price', 'Stock', 'Old Price', 'Old Stock', 'URL');";
 
-//}//end SQLMethods
-
     public static class TrackerDbHelper extends SQLiteOpenHelper {
         public static final int DATABASE_VERSION = 2;
         public static final String DATABASE_NAME = "Tracker.db";

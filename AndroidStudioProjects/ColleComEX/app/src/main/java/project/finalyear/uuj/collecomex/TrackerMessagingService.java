@@ -1,6 +1,5 @@
 package project.finalyear.uuj.collecomex;
 
-import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -61,13 +60,12 @@ public class TrackerMessagingService extends Service {
                             if (Parser.compareItem(dbRead)) {
                                 createNotification("Item updated!", "Open app for details");
                             }//end if
-                            //createNotification("Body", "Title");
                         }catch(Exception e){
                             Log.v("Exception", "Timer exception caught");
                             Log.v("Exception", e.toString());
                         }//end catch
                     }//end run
-                });
+                });//end post
             }//end run
         };
         mTimer1.schedule(mTt1, 1, 300000);
@@ -90,7 +88,6 @@ public class TrackerMessagingService extends Service {
                 .setSound(notificationSoundURI)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent);
-        //.setChannelId(CHANNEL_ID).build()
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             // Create the NotificationChannel, but only on API 26+ because
@@ -106,7 +103,6 @@ public class TrackerMessagingService extends Service {
         }
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        //notificationManager.createNotificationChannel(mChannel);
         notificationManager.notify(1, mBuilder.build());
 
     }//end createNotification
