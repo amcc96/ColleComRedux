@@ -1,7 +1,4 @@
 package project.finalyear.uuj.collecomex;
-/**
- * Created by Andrew on 17/03/2018.
- */
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -13,9 +10,22 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.IOException;
 
-public class Parser {
+class Parser {
 
-    public static ContentValues itemRetrieve(String givenUrl){
+    /**
+     * Returns a ContentValues object to be added to the database table.
+     * This method first checks the url source to determine whether it is an
+     * Amazon, eBay or an invalid link. If it is a valid link, it adds the .jks
+     * file (a compatible version of a websites SSL certificate) to the system's
+     * trust store. This enables online access to the site.
+     * The method then follows the URL and scrapes the specified data using the
+     * Jsoup library. This data is then added to the values variable and returned.
+     * If the URL is invalid, the method returns null.
+     *
+     * @param givenUrl  URL to be parsed
+     * @return          data scraped from the URL provided
+     */
+     static ContentValues itemRetrieve(String givenUrl){
         ContentValues values = new ContentValues();
         Log.e("givenURL", givenUrl);
         int index = givenUrl.indexOf("https://");
@@ -105,8 +115,20 @@ public class Parser {
             return values;
     }//end itemRetrieve
 
-
-    public static Boolean compareItem(SQLiteDatabase db){
+    /**
+     * Returns boolean value confirming if the update was successful or not.
+     * This method pulls the URL's that are stored in the table and runs them
+     * through the Jsoup parser. The price and stock data it scrapes is then
+     * compared to the data stored in the database. If there is a difference
+     * between what is stored and what is scraped, then the database gets
+     * updated with the new data.
+     * This method also has to check the url source to determine what html
+     * tags it is searching for.
+     *
+     * @param db    readable database object that the method will use
+     * @return      whether the update of data has been successful
+     */
+    static Boolean compareItem(SQLiteDatabase db){
         Boolean update = false;
         String sourceCheck = "";
         int index = 0;

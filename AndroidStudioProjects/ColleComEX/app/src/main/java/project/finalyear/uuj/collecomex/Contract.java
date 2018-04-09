@@ -1,13 +1,9 @@
-package project.finalyear.uuj.collecomex; /**
- * Created by Andrew on 17/03/2018.
- */
+package project.finalyear.uuj.collecomex;
+
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
-/**
- * Created by Andrew on 01/03/2018.
- */
 
 public final class Contract {
 
@@ -15,7 +11,7 @@ public final class Contract {
     // make the constructor private.
     private Contract() {}
 
-    /* Inner class that defines the table contents */
+    // Inner class that defines the table contents
     public static class Tracked implements BaseColumns {
         public static final String TABLE_NAME = "tracked";
         public static final String COLUMN_NAME_TITLE = "title";
@@ -27,6 +23,7 @@ public final class Contract {
         public static final String COLUMN_NAME_URL = "url";
     }//end Tracked class
 
+    //SQL to create the table within the database
     private static final String SQL_CreateTable =
             "CREATE TABLE " + Contract.Tracked.TABLE_NAME + " (" +
                     Contract.Tracked._ID + " INTEGER PRIMARY KEY," +
@@ -38,9 +35,11 @@ public final class Contract {
                     Contract.Tracked.COLUMN_NAME_OLDSTOCK + " TEXT," +
                     Contract.Tracked.COLUMN_NAME_URL + " TEXT)";
 
+    //Deletes table from database
     private static final String SQL_DeleteTable =
             "DROP TABLE IF EXISTS " + Contract.Tracked.TABLE_NAME;
 
+    //adds a new item to the table with default values
     private static final String SQL_AddItem =
             "INSERT INTO " + Contract.Tracked.TABLE_NAME + "("+
                     Contract.Tracked.COLUMN_NAME_TITLE + ", "+
@@ -57,26 +56,33 @@ public final class Contract {
         public static final String DATABASE_NAME = "Tracker.db";
 
 
+        //TrackerDbHelper created using existing database
         public TrackerDbHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        }
+        }//end TrackerDbHelper
 
+        //onCreate method to execute the SQL_CreateTable SQL
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SQL_CreateTable);
-        }
+        }//end onCreate
 
+        //Changes version number of the database, while deleting the existing one
+        //and creating a new one
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             db.execSQL(SQL_DeleteTable);
             onCreate(db);
-        }
+        }//end onUpgrade
 
+        //Changes the verson number of the database
+        //Calls onUpgrade() to complete the change
         public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             onUpgrade(db, oldVersion, newVersion);
-        }
+        }//end onDowngrade
 
+        //Deletes the table
         public void deleteTable(SQLiteDatabase db){
             db.execSQL(SQL_DeleteTable);
-        }
+        }//end deleteTable
 
     }//end TrackerDbHelper
 }//end class Contract

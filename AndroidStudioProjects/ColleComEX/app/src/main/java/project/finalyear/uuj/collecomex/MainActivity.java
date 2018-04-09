@@ -29,14 +29,33 @@ public class MainActivity extends AppCompatActivity {
     private String m_Text = "";
     final Context contextNew = this;
 
+    /**
+     * Creates a sub menu on the app's main screen, with the default '3 dots' icon.
+     * Returns a boolean value so that other reactions can be built on it in future.
+     * The menu that is passed in must be the menu where the options menu is required to appear.
+     * True is returned in all cases of this method to prevent crashing.
+     *
+     * @param menu menu variable where the sub menu is to appear
+     * @return     boolean value to enable future building on this method
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.sub_menu, menu);
         return true;
     }//end onCreateOptionsMenu
 
-
-    
+    /**
+     * Returns a boolean value that can be used to build on further reactions to any selected option.
+     * The item must be a valid MenuItem object. This item's ID determines the output of this
+     * method via a switch/case, with R.id.refresh performing compareItem and getTableAsString methods, R.id.credits
+     * displaying a dialog box with the app's credits, and R.id.help displaying a dialog box
+     * with a tutorial on how to use the app.
+     * True is returned regardless of the item input, in case an error occurs and the default case
+     * is called.
+     *
+     * @param item an absolute MenuItem with a valid ID
+     * @return     boolean value; true
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         final Contract.TrackerDbHelper mDbHelper = new Contract.TrackerDbHelper(contextNew);
@@ -87,6 +106,19 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }//end onOptionsItemSelected
 
+    /**
+     * The applications 'main method' which runs any time the app is opened.
+     * This method begins by running enableStrictMode(), and creating an onClickListener
+     * for the action button on the main screen. This action button creates a dialog box
+     * where the user may input a valid URL and click 'OK' for the system to begin
+     * scraping relevant information from the URL destination. There is a check within
+     * this dialog box to ensure that the URL is valid, and if it is not, the app displays
+     * a new dialog box informing the user that the URL was not valid and that they should try
+     * again.
+     * This method then begins the TrackerMessagingService service before calling getTableAsString()
+     *
+     * @param savedInstanceState    enables the restoration of a previous state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,12 +191,29 @@ public class MainActivity extends AppCompatActivity {
         getTableAsString(dbRead, Contract.Tracked.TABLE_NAME);
     }//end onCreate
 
+    /**
+     * This method sets the network policy to allow all possible permissions
+     */
     private void enableStrictMode(){
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-
         StrictMode.setThreadPolicy(policy);
     }//end enableStrictMode
 
+    /**
+     * This method is used to read and print the SQLite database contents.
+     * Using rawQuery(), the contents of the table are output into a Cursor object,
+     * which is then converted into a String[]. From there, the contents of the String[]
+     * are printed into dynamically created Views and added to the TableLayout constraint
+     * in content_main.xml.
+     * Each item from the database is output as a row in the TableLayout as text in a
+     * TextView, with a delete button next to them. This delete button is created at the
+     * same time as the other Views and has a set tag equal to the ID of its opposing item.
+     * Using this tag, SQL is executed to delete that row from the table, based on its ID,
+     * after the user confirms the action from a dialog box.
+     *
+     * @param db            the readable database object
+     * @param tableName     the name of the table that is to be searched and output
+     */
     private void getTableAsString(final SQLiteDatabase db, final String tableName) {
         Log.d("Method", "getTableAsString called");
         String tableString = "";
@@ -274,6 +323,11 @@ public class MainActivity extends AppCompatActivity {
         }//end try catch
     }//end GETTABLEASSTRING
 
+    /**
+     *  This method opens the passed URL in the user's default web browser.
+     *
+     * @param url   valid url passed to the web browser
+     */
     private void openItem(String url){
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         try {

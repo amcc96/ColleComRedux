@@ -25,11 +25,21 @@ public class TrackerMessagingService extends Service {
     private Handler mTimerHandler = new Handler();
     Context context = this;
 
+    //Neccessary method for any service. Serves no other purpose here
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-    }
+    }//end onBind
 
+    /**
+     * This method runs continuously in the background after it has been called.
+     * It runs startTimer() and prints to Log.e once it has started.
+     *
+     * @param intent    defines the targeted components of the system, UNUSED
+     * @param flags     controls flow of function, UNUSED
+     * @param startID   sets the method ID, UNUSED
+     * @return          Start_Sticky returned to confirm that the method is to continue running
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startID){
         Log.e("onStartCommand", "running");
@@ -37,6 +47,7 @@ public class TrackerMessagingService extends Service {
         return START_STICKY;
     }//end onStartCommand
 
+    //Stops the timer from running
     private void stopTimer(){
         if(mTimer1 != null){
             mTimer1.cancel();
@@ -44,6 +55,11 @@ public class TrackerMessagingService extends Service {
         }//end if
     }//end stopTimer
 
+    /**
+     * This method runs a timer that, when ticked, will run compareItem().
+     * If compareItem() returns true, the timer will run createNotification().
+     * This process repeats every 5 minutes after its initial 1ms delay.
+     */
     private void startTimer(){
         mTimer1 = new Timer();
         mTt1 = new TimerTask() {
@@ -71,6 +87,18 @@ public class TrackerMessagingService extends Service {
         mTimer1.schedule(mTt1, 1, 300000);
     }//end startTimer
 
+    /**
+     * This method creates a push notification that is sent to the user's device.
+     * The notification uses the data passed from the messageBody and messageTitle
+     * to create it's text, using the NotificationCompat.Builder.
+     * This method also checks if the device is running Android 8.0(Oreo).
+     * If so, then the method will create a notification channel for the app
+     * to send notifications through. This is necessary to send notifications
+     * on Android 8.0(Oreo).
+     *
+     * @param messageBody   the body of the notification
+     * @param messageTitle  the title of the notification
+     */
     public void createNotification(String messageBody, String messageTitle){
         Log.e("createNotification", "Running");
         String CHANNEL_ID = "Tracker";
@@ -100,11 +128,9 @@ public class TrackerMessagingService extends Service {
             // Register the channel with the system
             NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             notificationManager.createNotificationChannel(channel);
-        }
+        }//end if
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         notificationManager.notify(1, mBuilder.build());
-
     }//end createNotification
-
 }//end service
